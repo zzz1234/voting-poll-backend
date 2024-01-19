@@ -197,3 +197,17 @@ class GetUserByEmail(APIView):
     def get(self, request, email):
         user = self.users_model.objects.filter(email=email).values()
         return Response(status=status.HTTP_200_OK, data=user)
+
+
+class GetVotesResultsByGameId(APIView):
+    """Returns the votes results for a particular game_id"""
+
+    votes_serializer = serializers.VotesSerializer
+    votes_model = models.Votes
+
+    def get(self, request, game_id):
+        votes = self.votes_model.objects.filter(game_id__game_id=game_id).select_related('choice_id')
+        print(votes)
+        votes_count = utils.get_votes_count(votes)
+        # Make changes in API to show choice value instead of choice_id
+        return Response(status=status.HTTP_200_OK, data=votes_count)
