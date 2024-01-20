@@ -5,7 +5,7 @@ build:
     build:
       - python -m venv /path/to/new/virtual/environment
       - cd /path/to/new/virtual/environment
-      - Scripts\activate
+      - source Scripts/activate
       - pip install -r requirements.txt
 run:
   runtime-version: 3.8.16
