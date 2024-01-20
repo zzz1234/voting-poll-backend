@@ -7,3 +7,9 @@ db.sqlite3
 ./*/*.pyc
 
 ./*/*/__pycache__/*
+
+*.log
+*.pot
+*.pyc
+media
+staticfiles
