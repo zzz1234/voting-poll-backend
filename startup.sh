@@ -1,2 +1,4 @@
 #!/bin/bash
-python manage.py collectstatic && gunicorn --workers 2 myproject.wsgi
+pip3 install pipenv
+pipenv install
+pipenv run gunicorn django_apprunner.wsgi

@@ -3,6 +3,7 @@ Django
 django-cors-headers
 djangorestframework
 gunicorn
+fcntl
 numpy
 pandas
 python-dateutil
