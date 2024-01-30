@@ -211,3 +211,15 @@ class GetVotesResultsByGameId(APIView):
         votes_count = utils.get_votes_count(votes)
         # Make changes in API to show choice value instead of choice_id
         return Response(status=status.HTTP_200_OK, data=votes_count)
+
+
+class getVotesByUserAndGame(APIView):
+    """Returns the votes for a particular user_id and game_id"""
+
+    votes_serializer = serializers.VotesSerializer
+    votes_model = models.Votes
+
+    def get(self, request, user_id, game_id):
+        votes = self.votes_model.objects.filter(game_id__game_id=game_id, user_id__user_id=user_id).values()
+        # Make changes in API to show choice value instead of choice_id
+        return Response(status=status.HTTP_200_OK, data=votes)

@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from rest_framework.validators import UniqueTogetherValidator
 
 from voting_machine.setup import models
 
@@ -36,3 +37,10 @@ class VotesSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Votes
         fields = '__all__'
+        validators = [
+            UniqueTogetherValidator(
+                queryset=models.Votes.objects.all(),
+                fields=('game_id', 'user_id'),
+                message="Already voted"
+            )
+        ]
