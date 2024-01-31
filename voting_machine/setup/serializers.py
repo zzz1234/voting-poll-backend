@@ -40,7 +40,7 @@ class VotesSerializer(serializers.ModelSerializer):
         validators = [
             UniqueTogetherValidator(
                 queryset=models.Votes.objects.all(),
-                fields=('game_id', 'user_id'),
+                fields=('game_id', 'user_id', 'priority'),
                 message="Already voted"
             )
         ]

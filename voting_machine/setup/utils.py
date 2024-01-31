@@ -10,11 +10,12 @@ def create_game_code(game_name):
 
 def get_votes_count(votes):
     votes_count = {}
+    total_number_of_votes = votes[0].game_id.no_of_votes
     for vote in votes:
         # Append vote data
         if vote.choice_id.choice_value not in votes_count:
             votes_count[vote.choice_id.choice_value] = 0
-        votes_count[vote.choice_id.choice_value] += 1
+        votes_count[vote.choice_id.choice_value] += total_number_of_votes + 1 - vote.priority
     ret_data = []
     for key, value in votes_count.items():
         ret_data.append({'name': key, 'value': value})
