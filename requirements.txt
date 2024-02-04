@@ -13,3 +13,4 @@ sqlparse
 typing_extensions
 tzdata
 whitenoise
+openai

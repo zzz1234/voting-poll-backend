@@ -209,8 +209,25 @@ class GetVotesResultsByGameId(APIView):
         votes = self.votes_model.objects.filter(game_id__game_id=game_id).select_related('choice_id')
         print(votes)
         votes_count = utils.get_votes_count(votes)
-        # Make changes in API to show choice value instead of choice_id
         return Response(status=status.HTTP_200_OK, data=votes_count)
+
+
+class getResultSummaryByGameId(APIView):
+    """Returns the result summary for a particular game_id"""
+
+    votes_serializer = serializers.VotesSerializer
+    votes_model = models.Votes
+    voting_game_serializer = serializers.VotingGameSerializer
+    voting_game_model = models.VotingGame
+
+    def get(self, request, game_id):
+        votes = self.votes_model.objects.filter(game_id__game_id=game_id).select_related('choice_id')
+        game = self.voting_game_model.objects.filter(game_id=game_id).values()
+        print(votes)
+        summary = utils.get_poll_summary(votes, game)
+        # Make changes in API to show choice value instead of choice_id
+        vote_response = {'summary': summary}
+        return Response(status=status.HTTP_200_OK, data=vote_response)
 
 
 class getVotesByUserAndGame(APIView):

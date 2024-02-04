@@ -20,5 +20,6 @@ urlpatterns = [
     path('game/game-code/<str:game_code>', view=views.GetGameByGameCode().as_view()),
     path('user/user-email/<str:email>', view=views.GetUserByEmail().as_view()),
     path('game/<int:game_id>/results', view=views.GetVotesResultsByGameId().as_view()),
+    path('game/<int:game_id>/summary', view=views.getResultSummaryByGameId().as_view()),
     path('vote/<int:game_id>/user/<int:user_id>', view=views.getVotesByUserAndGame().as_view()),
 ]
