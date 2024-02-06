@@ -2,6 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import generics
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 
 from voting_machine.setup import models
 from voting_machine.setup import serializers
@@ -240,3 +241,22 @@ class getVotesByUserAndGame(APIView):
         votes = self.votes_model.objects.filter(game_id__game_id=game_id, user_id__user_id=user_id).values()
         # Make changes in API to show choice value instead of choice_id
         return Response(status=status.HTTP_200_OK, data=votes)
+
+
+class MyModelAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        data = {'message': 'This is a protected endpoint'}
+        return Response(status=status.HTTP_200_OK, data=data)
+
+
+class generateToken(APIView):
+
+    users_serializer = serializers.UsersSerializer
+    users_model = models.Users
+
+    def get(self, request):
+        # user = self.users_model.objects.get(user_id=user_id)
+        token = utils.generate_token(request.user)
+        return Response(status=status.HTTP_200_OK, data={'token': token})

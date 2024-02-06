@@ -22,4 +22,6 @@ urlpatterns = [
     path('game/<int:game_id>/results', view=views.GetVotesResultsByGameId().as_view()),
     path('game/<int:game_id>/summary', view=views.getResultSummaryByGameId().as_view()),
     path('vote/<int:game_id>/user/<int:user_id>', view=views.getVotesByUserAndGame().as_view()),
+    path('auth', view=views.MyModelAPIView().as_view()),
+    path('get_token', view=views.generateToken().as_view()),
 ]

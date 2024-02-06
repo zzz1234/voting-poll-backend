@@ -1,10 +1,12 @@
 import openai
 from datetime import datetime
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth.models import User
 # import pandas as pd
 
 
 def get_completion(prompt, model="gpt-3.5-turbo"):
-    openai.api_key = ''
+    openai.api_key = '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'
     messages = [{"role": "user", "content": prompt}]
     response = openai.ChatCompletion.create(
         model=model,
@@ -37,8 +39,12 @@ def get_votes_count(votes):
 def get_poll_summary(votes, game):
     vote_dict = fetch_vote_data(votes)
     prompt = f"""
-    We have a dataset of a poll "{game[0]['game_question']}", understand the context of the poll from the choice and comments.
+    We have a dataset of a poll "{game[0]['game_question']}", understand the context of the poll from the question, choice and comments.
     Generate a summary of the poll defining who the winner was, what was the reason(try to understand from the comments). Mention if there was any close second or a tie or any different scenario.
+    The summary should include below information in below format(enclose the content in <p> tag and use HTML tags to render the result):
+    Winner of the poll(in bold):
+    Reason: Write a very brief summary in less than 50 words from the comments corresponding to the winner of the poll.
+    Close second: Write a very brief summary in less than 50 words from the comments corresponding to the close second of the poll.
     Find the dataset enclosed in backticks below:
     ```
     {vote_dict}
@@ -57,3 +63,11 @@ def fetch_vote_data(votes):
         temp['comments'] = vote.comments
         vote_dict.append(temp)
     return vote_dict
+
+
+def generate_token(user):
+    refresh = RefreshToken.for_user(user)
+    return {
+        'refresh': str(refresh),
+        'access': str(refresh.access_token),
+    }
