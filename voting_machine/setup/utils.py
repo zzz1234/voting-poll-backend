@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 
 
 def get_completion(prompt, model="gpt-3.5-turbo"):
-    openai.api_key = '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'
+    openai.api_key = 'API_KEY'
     messages = [{"role": "user", "content": prompt}]
     response = openai.ChatCompletion.create(
         model=model,
