@@ -32,7 +32,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*', ".awsapprunner.com"]
 
-CORS_ALLOWED_ORIGINS = ['http://localhost:3030', 'http://localhost:3000']
+CORS_ALLOWED_ORIGINS = ['http://localhost:3030', 'http://localhost:3000', 'https://brave-flower-000684400.4.azurestaticapps.net']
 
 
 # Application definition
