@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 
 from voting_machine.setup import models
 from voting_machine.setup import serializers
-from voting_machine.setup import utils
+from voting_machine.setup.utils import utils
 
 
 # Create your views here.
@@ -259,4 +259,4 @@ class generateToken(APIView):
     def get(self, request):
         # user = self.users_model.objects.get(user_id=user_id)
         token = utils.generate_token(request.user)
-        return Response(status=status.HTTP_200_OK, data={'token': token})
+        return Response(status=status.HTTP_200_OK, data={'token': token, 'message': 'Token is generated'})
