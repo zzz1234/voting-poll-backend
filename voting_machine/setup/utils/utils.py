@@ -2,11 +2,12 @@ import openai
 from datetime import datetime
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.models import User
+import secret_utils
 # import pandas as pd
 
 
 def get_completion(prompt, model="gpt-3.5-turbo"):
-    openai.api_key = 'API_KEY'
+    openai.api_key = secret_utils.get_secret('OpenAIApiKey')
     messages = [{"role": "user", "content": prompt}]
     response = openai.ChatCompletion.create(
         model=model,
