@@ -2,7 +2,7 @@ import openai
 from datetime import datetime
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.models import User
-import secret_utils
+from voting_machine.setup.utils import secret_utils
 # import pandas as pd
 
 
