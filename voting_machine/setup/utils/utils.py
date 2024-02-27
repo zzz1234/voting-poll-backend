@@ -1,7 +1,7 @@
 import openai
 from datetime import datetime
 from rest_framework_simplejwt.tokens import RefreshToken
-from django.contrib.auth.models import User
+from voting_machine.setup import models
 from voting_machine.setup.utils import secret_utils
 # import pandas as pd
 
@@ -72,3 +72,14 @@ def generate_token(user):
         'refresh': str(refresh),
         'access': str(refresh.access_token),
     }
+
+
+def authenticate(email, password):
+    try:
+        user = models.Users.objects.get(email=email)
+        if user.password == password:
+            return user
+        else:
+            return None
+    except models.Users.DoesNotExist:
+        return None

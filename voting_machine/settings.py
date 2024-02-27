@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'corsheaders',  # Added for CORS
     'rest_framework',
+    'rest_framework_simplejwt',
     # 'voting_machine',
     'voting_machine.setup',
 ]
@@ -53,9 +54,12 @@ INSTALLED_APPS = [
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
+        # 'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
         # Add other authentication classes if needed
     ),
 }
+
+AUTH_USER_MODEL = 'setup.Users'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -106,7 +110,8 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'postgres',
         'USER': 'service_user',
-        'PASSWORD': secret_utils.get_secret('DBPassword'),
+        # 'PASSWORD': secret_utils.get_secret('DBPassword'),
+        'PASSWORD': 'Rawal@123',
         'HOST': 'voting-app-db.postgres.database.azure.com',
         'PORT': '5432',
     }
