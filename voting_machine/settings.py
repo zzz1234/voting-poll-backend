@@ -110,8 +110,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'postgres',
         'USER': 'service_user',
-        # 'PASSWORD': secret_utils.get_secret('DBPassword'),
-        'PASSWORD': 'Rawal@123',
+        'PASSWORD': secret_utils.get_secret('DBPassword'),
         'HOST': 'voting-app-db.postgres.database.azure.com',
         'PORT': '5432',
     }
