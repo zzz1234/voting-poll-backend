@@ -24,4 +24,9 @@ urlpatterns = [
     path('vote/<int:game_id>/user/<int:user_id>', view=views.getVotesByUserAndGame().as_view()),
     path('auth', view=views.MyModelAPIView().as_view()),
     path('get_token', view=views.generateToken().as_view()),
+    path('login', view=views.LoginView().as_view()),
+    path('signup', view=views.SignUpView().as_view()),
+    path('signout', view=views.SignoutAPIView().as_view()),
+    path('refresh-token', view=views.RefreshJWTTokenView().as_view()),
+    path('confirm-email/<str:uidb64>/<str:token>/', view=views.ConfirmEmailView.as_view()),
 ]

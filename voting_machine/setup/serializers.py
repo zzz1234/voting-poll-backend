@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
+from django.core.exceptions import ValidationError
 
 from voting_machine.setup import models
 
@@ -12,6 +13,22 @@ class VotingGameSerializer(serializers.ModelSerializer):
 
 
 class UsersSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
+
+    def validate_password(self, value):
+        if not any(char.isdigit() for char in value):
+            raise ValidationError("Password must contain at least one number")
+        if not any(char in "!@#$%^&*()_+-=[]{}|:;<>?,." for char in value):
+            raise ValidationError("Password must contain at least one special character")
+        return value
+    
+
+    def create(self, validated_data):
+        user = models.Users.objects.create_user(
+            email=validated_data['email'],
+            password=validated_data['password']
+        )
+        return user
 
     class Meta:
         model = models.Users

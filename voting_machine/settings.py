@@ -25,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-v%*c=b364(f^al(9!j2ig#9&uh08-^%^kk*cxzt6y6*#x)2vui'
+SECRET_KEY = secret_utils.get_secret('DjangoAppRunnerSecretKey')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'corsheaders',  # Added for CORS
     'rest_framework',
+    'rest_framework_simplejwt',
     # 'voting_machine',
     'voting_machine.setup',
 ]
@@ -53,9 +54,12 @@ INSTALLED_APPS = [
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
+        # 'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
         # Add other authentication classes if needed
     ),
 }
+
+AUTH_USER_MODEL = 'setup.Users'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -163,3 +167,14 @@ STORAGES = {
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+DEFAULT_FROM_EMAIL = 'ujjwalsharma04@gmail.com'
+
+# Set the email backend to use SMTP
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+# SMTP server settings
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587  # Gmail SMTP server uses port 587
+EMAIL_HOST_USER = 'ujjwalsharma04@gmail.com'  # Your Gmail address
+EMAIL_HOST_PASSWORD = secret_utils.get_secret('EMAIL-HOST-PASSWORD')  # Your Gmail password
+EMAIL_USE_TLS = True  # Gmail requires TLS encryption

@@ -4,9 +4,21 @@ from rest_framework import generics
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 
+from django.core.mail import send_mail
+from django.conf import settings
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_decode
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_str
+
 from voting_machine.setup import models
 from voting_machine.setup import serializers
 from voting_machine.setup.utils import utils
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.http import JsonResponse
+from django.contrib.auth import authenticate
+
 
 
 # Create your views here.
@@ -80,10 +92,136 @@ class VotesDetail(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = serializers.VotesSerializer
 
 
+class LoginView(APIView):
+    """Login with email and password"""
+
+    # class_serializer = serializers.LoginSerializer
+
+    def post(self, request):
+        email = request.data.get('email')
+        password = request.data.get('password')
+        user = authenticate(email=email, password=password)
+        if user:
+            if not user.is_active:
+                return Response(
+                    status=status.HTTP_400_BAD_REQUEST,
+                    data={'message': 'User is not active'}
+                )
+            refresh = RefreshToken.for_user(user)
+            refresh.access_token.set_exp()
+            return Response(
+                status=status.HTTP_200_OK,
+                data={'refresh': str(refresh),
+                      'access': str(refresh.access_token),
+                      'user': serializers.UsersSerializer(user).data}
+            )
+        else:
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST,
+                data={'message': 'Unable to login'}
+            )
+
+
+class SignUpView(APIView):
+    """Sign up with email and password"""
+
+    class_serializer = serializers.UsersSerializer
+
+    def post(self, request):
+        serializer = self.class_serializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            user.is_active=False
+            user.save()
+
+            token_generator = default_token_generator
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            token = token_generator.make_token(user)
+
+            base_url = utils.get_base_url(request)
+            
+            confirmation_link = f"{base_url}/api/confirm-email/{uid}/{token}/"
+
+            send_mail(
+                'Confirm your email address',
+                f'Please click the following link to confirm your email address: {confirmation_link}',
+                settings.DEFAULT_FROM_EMAIL,
+                [user.email],
+                fail_silently=False,
+            )
+
+            return Response({
+                'user': serializer.data,
+                'message': 'Sign up successful. Please confirm your email address.'
+            })
+        else:
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST,
+                data={'message': 'Unable to sign up'}
+            )
+
+
+class ConfirmEmailView(APIView):
+    def get(self, request, uidb64, token):
+        try:
+            # Decode uid
+            uid = force_str(urlsafe_base64_decode(uidb64))
+            user = models.Users.objects.get(pk=uid)
+
+            # Verify token
+            if default_token_generator.check_token(user, token):
+                # Mark user's email as verified
+                user.is_active = True
+                user.save()
+                return Response({'message': 'Your email has been verified.'}, status=status.HTTP_200_OK)
+            else:
+                return Response({'message': 'Invalid token.'}, status=status.HTTP_400_BAD_REQUEST)
+        except User.DoesNotExist:
+            return Response({'message': 'Invalid user.'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class SignoutAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        try:
+            # Invalidate the token by blacklisting it
+            request.user.auth_token.blacklist()
+            return Response({"message": "Successfully logged out."}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": "Failed to log out."}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class RefreshJWTTokenView(APIView):
+
+    def post(self, request):
+        refresh_token = request.data.get('refresh_token')
+
+        # Validate the refresh token
+        if refresh_token is None:
+            return JsonResponse({'error': 'Refresh token is required'}, status=400)
+
+        try:
+            # Attempt to validate the refresh token
+            refresh_token_obj = RefreshToken(refresh_token)
+            user_id = refresh_token_obj.payload['user_id']
+            user = models.Users.objects.get(pk=user_id)
+            if user is None:
+                return JsonResponse({'error': 'Invalid refresh token'}, status=401)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+
+        # Generate a new JWT token
+        access_token = str(refresh_token_obj.access_token)
+
+        return JsonResponse({'access_token': access_token})
+
+
 class CreateNewGame(APIView):
     """Creates a new game"""
 
     class_serializer = serializers.VotingGameSerializer
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
 
@@ -120,6 +258,7 @@ class AddGameUser(APIView):
     user_serializer = serializers.UsersSerializer
     user_model = models.Users
     game_user_serializer = serializers.GameUsersSerializer
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
         user = request.data.get('user_name')
@@ -149,6 +288,7 @@ class AddGameUser(APIView):
 class AddChoices(APIView):
     """Add choices to an existing game. Choices are added in bulk"""
     choices_serializer = serializers.ChoicesSerializer
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
         choices = request.data.get('choices')
@@ -170,6 +310,7 @@ class GetGameChoices(APIView):
     choices_serializer = serializers.ChoicesSerializer
     choices_model = models.Choices
     voting_game_serializer = serializers.VotingGameSerializer
+    permission_classes = [IsAuthenticated]
 
     def get(self, request, pk):
         # Get game_id from request as pk.
@@ -182,6 +323,7 @@ class GetGameByGameCode(APIView):
 
     voting_game_serializer = serializers.VotingGameSerializer
     voting_game_model = models.VotingGame
+    permission_classes = [IsAuthenticated]
 
     def get(self, request, game_code):
         # Get game_id from request as pk.
@@ -194,6 +336,7 @@ class GetUserByEmail(APIView):
 
     users_serializer = serializers.UsersSerializer
     users_model = models.Users
+    permission_classes = [IsAuthenticated]
 
     def get(self, request, email):
         user = self.users_model.objects.filter(email=email).values()
@@ -205,6 +348,7 @@ class GetVotesResultsByGameId(APIView):
 
     votes_serializer = serializers.VotesSerializer
     votes_model = models.Votes
+    permission_classes = [IsAuthenticated]
 
     def get(self, request, game_id):
         votes = self.votes_model.objects.filter(game_id__game_id=game_id).select_related('choice_id')
@@ -220,6 +364,7 @@ class getResultSummaryByGameId(APIView):
     votes_model = models.Votes
     voting_game_serializer = serializers.VotingGameSerializer
     voting_game_model = models.VotingGame
+    permission_classes = [IsAuthenticated]
 
     def get(self, request, game_id):
         votes = self.votes_model.objects.filter(game_id__game_id=game_id).select_related('choice_id')
@@ -236,9 +381,10 @@ class getVotesByUserAndGame(APIView):
 
     votes_serializer = serializers.VotesSerializer
     votes_model = models.Votes
+    permission_classes = [IsAuthenticated]
 
     def get(self, request, user_id, game_id):
-        votes = self.votes_model.objects.filter(game_id__game_id=game_id, user_id__user_id=user_id).values()
+        votes = self.votes_model.objects.filter(game_id__game_id=game_id, user_id__id=user_id).values()
         # Make changes in API to show choice value instead of choice_id
         return Response(status=status.HTTP_200_OK, data=votes)
 
