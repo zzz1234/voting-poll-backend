@@ -27,4 +27,6 @@ urlpatterns = [
     path('login', view=views.LoginView().as_view()),
     path('signup', view=views.SignUpView().as_view()),
     path('signout', view=views.SignoutAPIView().as_view()),
+    path('refresh-token', view=views.RefreshJWTTokenView().as_view()),
+    path('confirm-email/<str:uidb64>/<str:token>/', view=views.ConfirmEmailView.as_view()),
 ]

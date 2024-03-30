@@ -13,7 +13,7 @@ class VotingGameSerializer(serializers.ModelSerializer):
 
 
 class UsersSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=False)
+    password = serializers.CharField(write_only=True)
 
     def validate_password(self, value):
         if not any(char.isdigit() for char in value):

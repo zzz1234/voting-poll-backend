@@ -1,4 +1,5 @@
 import openai
+from django.contrib.sites.shortcuts import get_current_site
 from datetime import datetime
 from rest_framework_simplejwt.tokens import RefreshToken
 from voting_machine.setup import models
@@ -83,3 +84,9 @@ def authenticate(email, password):
             return None
     except models.Users.DoesNotExist:
         return None
+
+
+def get_base_url(request):
+    current_site = get_current_site(request)
+    protocol = 'https' if request.is_secure() else 'http'
+    return f'{protocol}://{current_site.domain}'
